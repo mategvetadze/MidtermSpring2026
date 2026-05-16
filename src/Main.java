@@ -16,6 +16,7 @@ public class Main {
     static String upCard = "";
     static String calledColor = "";
     static boolean quiet = false;
+    static boolean verboseTests = false;
     static Random random = new Random();
     static Scanner scanner = new Scanner(System.in);
 
@@ -169,23 +170,7 @@ public class Main {
                 }
 
                 String card = hand.get(chosen);
-                boolean ok = false;
-                String cardColor = color(card);
-                String upColor = color(upCard);
-                String cardRank = rank(card);
-                String upRank = rank(upCard);
-
-                if (card.startsWith("W")) {
-                    ok = true;
-                } else if (cardColor.equals(upColor)) {
-                    ok = true;
-                } else if (!calledColor.equals("") && cardColor.equals(calledColor)) {
-                    ok = true;
-                } else if (cardRank.equals(upRank) && !cardRank.equals("NUMBER")) {
-                    ok = true;
-                } else if (cardRank.equals("NUMBER") && upRank.equals("NUMBER") && number(card) == number(upCard)) {
-                    ok = true;
-                }
+                boolean ok = GameRules.isLegalPlay(card, upCard, calledColor);
 
                 if (!ok) {
                     if (!quiet) {
@@ -288,47 +273,40 @@ public class Main {
     }
 
     static int chooseBotCard(ArrayList<String> hand) {
+        // Strategy 1: Play draw two if legal
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("DRAW_TWO") && ok) {
+            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
+                GameRules.getCardRank(card).equals("DRAW_TWO")) {
                 return i;
             }
         }
+
+        // Strategy 2: Play skip if legal
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("SKIP") && ok) {
+            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
+                GameRules.getCardRank(card).equals("SKIP")) {
                 return i;
             }
         }
+
+        // Strategy 3: Play number card if legal
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("NUMBER") && ok) {
+            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
+                GameRules.getCardRank(card).equals("NUMBER")) {
                 return i;
             }
         }
+
+        // Strategy 4: Play wild if nothing else works
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).startsWith("W")) {
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -407,78 +385,23 @@ public class Main {
     }
 
     static boolean isLegal(String card, String up, String call) {
-        if (card.startsWith("W")) {
-            return true;
-        }
-        if (color(card).equals(color(up))) {
-            return true;
-        }
-        if (!call.equals("") && color(card).equals(call)) {
-            return true;
-        }
-        if (rank(card).equals(rank(up)) && !rank(card).equals("NUMBER")) {
-            return true;
-        }
-        if (rank(card).equals("NUMBER") && rank(up).equals("NUMBER") && number(card) == number(up)) {
-            return true;
-        }
-        return false;
+        return GameRules.isLegalPlay(card, up, call);
     }
 
     static String color(String card) {
-        if (card.startsWith("R")) {
-            return "R";
-        }
-        if (card.startsWith("Y")) {
-            return "Y";
-        }
-        if (card.startsWith("G")) {
-            return "G";
-        }
-        if (card.startsWith("B")) {
-            return "B";
-        }
-        return "";
+        return GameRules.getCardColor(card);
     }
 
     static String rank(String card) {
-        if (card.equals("W")) {
-            return "WILD";
-        }
-        if (card.equals("W4")) {
-            return "WILD_DRAW_FOUR";
-        }
-        if (card.endsWith("S")) {
-            return "SKIP";
-        }
-        if (card.endsWith("R")) {
-            return "REVERSE";
-        }
-        if (card.endsWith("+2")) {
-            return "DRAW_TWO";
-        }
-        return "NUMBER";
+        return GameRules.getCardRank(card);
     }
 
     static int number(String card) {
-        if (rank(card).equals("NUMBER")) {
-            return Integer.parseInt(card.substring(1));
-        }
-        return -1;
+        return GameRules.getCardNumber(card);
     }
 
     static int points(String card) {
-        String r = rank(card);
-        if (r.equals("NUMBER")) {
-            return number(card);
-        }
-        if (r.equals("SKIP") || r.equals("REVERSE") || r.equals("DRAW_TWO")) {
-            return 20;
-        }
-        if (r.equals("WILD") || r.equals("WILD_DRAW_FOUR")) {
-            return 50;
-        }
-        return 0;
+        return GameRules.getCardPoints(card);
     }
 
     static void next() {
