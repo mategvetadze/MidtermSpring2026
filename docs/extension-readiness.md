@@ -1,179 +1,77 @@
-# Extension-Readiness Guide
+# Extension-Readiness Note
 
-The refactored architecture makes it easy to extend the game in many directions.
+## Best-Supported Extension: Smarter Bot Strategy
 
-## Easy Extensions
+The design now supports a **smarter bot** as the easiest next change.
 
-### Improve Bot Strategy
+### Where to implement
 
-**File:** `Game.java` → `chooseBotCard()` and `chooseBotColor()`
+- **`src/BotPlayer.java`** — replace or extend `chooseCard()` and `chooseColor()`
+- Optionally introduce a `PlayerStrategy` interface if multiple bot personalities are needed
 
-**Why:** Bot decisions are already isolated. Easy to add new heuristics.
+### Why it is easy
 
-**Example:**
-```java
-// Prefer cards that leave you with one card (blocking opponents)
-// Consider opponent hand sizes
-// Play defensively vs. aggressively based on position
-```
+- Bot decisions are no longer mixed into the game loop or `Main`.
+- `BotPlayer.chooseCard()` already receives the hand, up card, and called color.
+- `GameRules.isLegalPlay()` remains the single authority for legality, so a new bot cannot accidentally invent different rules.
+- `GameEngine` does not care how a card index was chosen; it only executes the play.
 
----
+### Example change
 
-### Add New Rule Variants
-
-**File:** `GameRules.java` → add `isLegalPlayHouseRules()`
-
-**Why:** `GameRules` is the single source of truth. Toggle variants in `GameState`.
-
-**Example:**
-```java
-// 7-0 rule (play 7, rotate; play 0, reverse order)
-// Jump-in (play same card as up card out of turn)
-// Stacking draw cards (stack +2 on +2 for +4)
-```
+A smarter bot could prefer playing cards that leave fewer opponents, hold wilds longer, or count remaining colors. All of that logic stays in `BotPlayer` without touching `ConsoleGame` or `GameEngine`.
 
 ---
 
-### Track Game Statistics
+## Second-Easiest Extension: New Card Effect or Rule Variant
 
-**File:** `GameState.java` → add fields
+### Where to implement
 
-**Why:** State is already encapsulated. Add counters naturally.
+- **New card effect**: `GameEngine.applyCardEffect()` and `GameRules.getCardEffect()`
+- **House rule / variant**: `GameRules.isLegalPlay()` or a sibling method selected at startup in `Main`
 
-**Example:**
-```java
-private int turnsPlayed;
-private int[] wildCardsPlayed;
-private int[] penaltyCardsDrawn;
-```
+### Why it is plausible
 
----
+- Turn effects (skip, reverse, draw two, wild draw four) are already isolated in `GameEngine.applyCardEffect()`.
+- `GameTest` includes direct tests for each effect via `GameEngine`, so a new effect can get tests without running the CLI.
+- Legal-play rules live in one place (`GameRules` / `Card`), not scattered across the loop.
 
-## Moderate Extensions
+### Example change
 
-### Separate Console I/O Fully
-
-**File:** Create `CLI.java` and `BatchRunner.java`
-
-**Why:** `ConsoleUI` already handles I/O. Split interactive vs. programmatic.
-
-**Example:**
-```java
-ConsoleUI ui = new ConsoleUI(quiet);  // human-interactive
-BatchRunner runner = new BatchRunner(ui);  // testing/statistics
-```
+A “draw three” variant would add a rank branch in `applyCardEffect()`, a parsing case in `Card`, and a new characterization test — without rewriting `ConsoleGame`.
 
 ---
 
-### Add Human vs. Human Games
+## Third Extension: Replay Log or Better CLI View
 
-**File:** `ConsoleUI.java` → `askHumanCard()` already supports multiple humans
+### Where to implement
 
-**Why:** No refactoring needed. Just set `human=true` for multiple players.
+- **Replay log**: collect `GameEngine.TurnOutcome.events` in `ConsoleGame` or a new `GameLogger` class
+- **Better view**: replace or wrap output in `ConsoleGame` (formatting hands, hiding opponent cards, etc.)
 
-**Change:** Remove check that limits one human player.
+### Why it is plausible
 
----
-
-### Implement Move Objects
-
-**File:** Create `Move.java` hierarchy
-
-**Why:** Encapsulates turn actions for undo/redo.
-
-**Example:**
-```java
-public abstract class Move {
-    abstract void execute(GameState state);
-    abstract void undo(GameState state);
-}
-
-class PlayCardMove extends Move { }
-class DrawCardMove extends Move { }
-class PassMove extends Move { }
-```
+- `GameEngine` already returns event strings (plays, draws, UNO, wins) separate from printing.
+- `ConsoleGame` owns all `System.out` / `Scanner` usage, so a different view does not require rule changes.
 
 ---
 
-## Harder Extensions
+## What Still Makes Change Hard
 
-### Save / Load Game State
-
-**File:** Add `GameState.serialize()` and `GameState.deserialize()`
-
-**Why:** `GameState` holds all state. JSON serialization is straightforward.
-
-**Example:**
-```java
-// Save:
-String json = GameStateSerializer.toJson(state);
-Files.write(Path.of("game.json"), json);
-
-// Load:
-GameState state = GameStateSerializer.fromJson(content);
-game.run();
-```
+1. **Human draw-and-decide flow** — After drawing, a human is prompted whether to play the card. That logic lives in `ConsoleGame.playOneTurn()` and is awkward to test without mocking `Scanner`.
+2. **String card codes everywhere** — Hands and piles are `ArrayList<String>`. A full card object model through the engine would be a larger migration, though `Card` already encapsulates parsing.
+3. **Single console front-end** — There is no abstraction over “view” yet; swapping to a GUI would mean rewriting `ConsoleGame`, even though `GameEngine` is reusable.
+4. **Global scoring in `GameState`** — Multi-round tournament rules or per-hand history would need more structure around `GameState.scores` and session lifecycle in `Main`.
 
 ---
 
-### Network Multiplayer
+## Summary
 
-**File:** Create `GameServer.java` and `GameClient.java`
+| Extension | Primary file(s) | Difficulty |
+|-----------|-----------------|------------|
+| Smarter bot | `BotPlayer.java` | Low |
+| New card effect | `GameEngine.java`, `Card.java`, `GameTest.java` | Low–medium |
+| Rule variant | `GameRules.java` | Low–medium |
+| Replay log | `ConsoleGame.java` or new logger | Medium |
+| GUI / new view | New view class; keep `GameEngine` | Medium–high |
 
-**Why:** `Game` logic is independent of I/O. Network I/O is just another `ConsoleUI`.
-
-**Example:**
-```java
-// Server sends game state to all clients
-// Clients send moves back to server
-// Server updates state and broadcasts
-```
-
----
-
-### Undo / Redo
-
-**File:** Use `Move` objects (see above) + `GameHistory`
-
-**Why:** With move capture, undo/redo becomes trivial.
-
-**Example:**
-```java
-private ArrayList<Move> history;
-
-public void undo() {
-    Move last = history.remove(history.size() - 1);
-    last.undo(state);
-}
-```
-
----
-
-## What Stays Stable
-
-These are unlikely to change and can be depended on:
-
-- `Card` class parsing rules
-- `GameRules.isLegalPlay()` core contract
-- `Deck` reshuffle behavior
-- Scoring formula
-- Player turn rotation
-- Action card effects (skip, reverse, draw two, wild draw four)
-
----
-
-## Design Principles
-
-1. **State is centralized** → All game state lives in `GameState`
-2. **Rules are centralized** → All rules live in `GameRules`
-3. **I/O is separate** → `ConsoleUI` handles all user interaction
-4. **Game logic is pure** → `Game.executeTurn()` uses state and rules
-5. **Tests document behavior** → Tests in `GameTest.java` and `RuleTest.java`
-
-Follow these principles when extending:
-
-- Add new features to the class responsible for that concern
-- Add new tests when adding new behavior
-- Keep `Main.java` thin
-- Avoid adding logic to `ConsoleUI`
-- Route all rule changes through `GameRules`
+The refactor’s main win is that **rules and turn effects are testable without the CLI**. `GameTest` exercises `GameEngine` directly for skip, reverse, draw two, wild draw four, scoring, and draw quirks. The main remaining coupling is the **interactive human draw prompt** in `ConsoleGame`.

@@ -2,7 +2,7 @@
 
 This is a standalone CLI UNO-like game.
 
-The code is written as plausible feature-grown Java: almost everything lives in one procedural `Main` class. It works, but it has mixed responsibilities, duplicated rule logic, primitive-heavy card handling, global state, and condition-heavy gameplay code. The goal is to refactor it safely, not rewrite it.
+The code was originally written as feature-grown Java in one `Main` class. It has been refactored into separate classes for game state, rules, deck management, console I/O, and bot strategy while preserving behavior.
 
 ## Compile
 
@@ -39,6 +39,27 @@ draw draw a card
 ```bash
 scripts/test.sh
 ```
+
+On Windows:
+
+```bat
+scripts\test.bat
+```
+
+This compiles the project, runs the 9 legacy checks in `Main --self-test`, then runs all **37** characterization tests in `GameTest` with assertions enabled (`-ea`).
+
+## Project Structure
+
+| Class | Responsibility |
+|-------|----------------|
+| `Main` | CLI entry point and argument parsing |
+| `ConsoleGame` | Console input/output and turn orchestration |
+| `GameEngine` | Rule execution, turn effects, and scoring (no I/O) |
+| `GameState` | Mutable session state |
+| `Deck` | Draw pile and discard pile |
+| `BotPlayer` | Bot card and color selection |
+| `Card` / `GameRules` | Card representation and legal-play rules |
+| `GameTest` | Characterization tests runnable without the interactive CLI |
 
 ## Submission
 

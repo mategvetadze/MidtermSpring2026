@@ -2,73 +2,76 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-
+/**
+ * Manages the draw pile and discard pile.
+ */
 public class Deck {
-    private ArrayList<String> draw;
-    private ArrayList<String> discard;
-    private Random random;
+    private final ArrayList<String> drawPile = new ArrayList<>();
+    private final ArrayList<String> discardPile = new ArrayList<>();
+    private Random random = new Random();
 
-    public Deck(Random random) {
-        this.draw = new ArrayList<>();
-        this.discard = new ArrayList<>();
+    public void setRandom(Random random) {
         this.random = random;
     }
 
-    public void initialize() {
-        draw.clear();
-        discard.clear();
-
+    public void buildAndShuffle() {
+        drawPile.clear();
         String[] colors = {"R", "Y", "G", "B"};
-        for (String col : colors) {
-            draw.add(col + "0");
+        for (int c = 0; c < colors.length; c++) {
+            drawPile.add(colors[c] + "0");
             for (int n = 1; n <= 9; n++) {
-                draw.add(col + n);
-                draw.add(col + n);
+                drawPile.add(colors[c] + n);
+                drawPile.add(colors[c] + n);
             }
-            draw.add(col + "S");
-            draw.add(col + "S");
-            draw.add(col + "R");
-            draw.add(col + "R");
-            draw.add(col + "+2");
-            draw.add(col + "+2");
+            drawPile.add(colors[c] + "S");
+            drawPile.add(colors[c] + "S");
+            drawPile.add(colors[c] + "R");
+            drawPile.add(colors[c] + "R");
+            drawPile.add(colors[c] + "+2");
+            drawPile.add(colors[c] + "+2");
         }
         for (int i = 0; i < 4; i++) {
-            draw.add("W");
-            draw.add("W4");
+            drawPile.add("W");
+            drawPile.add("W4");
         }
-        Collections.shuffle(draw, random);
+        Collections.shuffle(drawPile, random);
+        discardPile.clear();
     }
 
     public String draw() {
-        if (draw.isEmpty()) {
-            draw.addAll(discard);
-            discard.clear();
-            Collections.shuffle(draw, random);
+        if (drawPile.isEmpty()) {
+            drawPile.addAll(discardPile);
+            discardPile.clear();
+            Collections.shuffle(drawPile, random);
         }
-        if (draw.isEmpty()) {
+        if (drawPile.isEmpty()) {
             return "W";
         }
-        return draw.removeFirst();
+        return drawPile.remove(0);
     }
 
     public void discard(String card) {
-        discard.add(card);
-    }
-
-    public String peekDiscard() {
-        return discard.isEmpty() ? "" : discard.getLast();
-    }
-
-    public int drawSize() {
-        return draw.size();
-    }
-
-    public int discardSize() {
-        return discard.size();
+        discardPile.add(card);
     }
 
     public void clear() {
-        draw.clear();
-        discard.clear();
+        drawPile.clear();
+        discardPile.clear();
+    }
+
+    public ArrayList<String> getDrawPile() {
+        return drawPile;
+    }
+
+    public ArrayList<String> getDiscardPile() {
+        return discardPile;
+    }
+
+    public int drawPileSize() {
+        return drawPile.size();
+    }
+
+    public int discardPileSize() {
+        return discardPile.size();
     }
 }
