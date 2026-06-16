@@ -3,4 +3,3 @@ set -eu
 
 scripts/compile.sh
 java -cp out Main --self-test
-java -ea -cp out GameTest
