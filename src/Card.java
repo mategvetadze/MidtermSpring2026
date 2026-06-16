@@ -121,4 +121,3 @@ public class Card {
         return code.hashCode();
     }
 }
-

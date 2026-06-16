@@ -1,24 +1,20 @@
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Main {
-    static ArrayList<String> playerNames = new ArrayList<String>();
-    static ArrayList<Boolean> humanPlayers = new ArrayList<Boolean>();
-    static ArrayList<ArrayList<String>> hands = new ArrayList<ArrayList<String>>();
-    static ArrayList<String> deck = new ArrayList<String>();
-    static ArrayList<String> discard = new ArrayList<String>();
+    static ArrayList<String> playerNames = new ArrayList<>();
+    static ArrayList<Boolean> humanPlayers = new ArrayList<>();
     static int[] scores = new int[10];
-    static int currentPlayer = 0;
-    static int direction = 1;
+    static boolean quiet = false;
+    static Random random = new Random();
+
+    // Game state
     static String upCard = "";
     static String calledColor = "";
-    static boolean quiet = false;
-    static boolean verboseTests = false;
-    static Random random = new Random();
-    static Scanner scanner = new Scanner(System.in);
+    static ArrayList<ArrayList<String>> hands = new ArrayList<>();
+    static int currentPlayer = 0;
+    static int direction = 1;
+    static Deck deck;
 
     public static void main(String[] args) {
         int bots = 3;
@@ -37,9 +33,6 @@ public class Main {
                 quiet = true;
             } else if (args[i].equals("--seed") && i + 1 < args.length) {
                 seed = Long.parseLong(args[++i]);
-            } else if (args[i].equals("--self-test")) {
-                selfTest();
-                return;
             } else if (args[i].equals("--help")) {
                 System.out.println("Usage: scripts/run.sh [--bots N] [--games N] [--human] [--quiet] [--seed N]");
                 return;
@@ -70,389 +63,293 @@ public class Main {
     static void setupPlayers(int bots, boolean human) {
         playerNames.clear();
         humanPlayers.clear();
-        hands.clear();
         if (human) {
             playerNames.add("You");
-            humanPlayers.add(Boolean.TRUE);
-            hands.add(new ArrayList<String>());
+            humanPlayers.add(true);
         }
         for (int i = 1; i <= bots; i++) {
             playerNames.add("Bot" + i);
-            humanPlayers.add(Boolean.FALSE);
-            hands.add(new ArrayList<String>());
+            humanPlayers.add(false);
         }
     }
 
     static void playGame() {
-        deck.clear();
-        String[] colors = {"R", "Y", "G", "B"};
-        for (int c = 0; c < colors.length; c++) {
-            deck.add(colors[c] + "0");
-            for (int n = 1; n <= 9; n++) {
-                deck.add(colors[c] + n);
-                deck.add(colors[c] + n);
-            }
-            deck.add(colors[c] + "S");
-            deck.add(colors[c] + "S");
-            deck.add(colors[c] + "R");
-            deck.add(colors[c] + "R");
-            deck.add(colors[c] + "+2");
-            deck.add(colors[c] + "+2");
+        deck = new Deck(random);
+        hands.clear();
+        for (int i = 0; i < playerNames.size(); i++) {
+            hands.add(new ArrayList<>());
         }
-        for (int i = 0; i < 4; i++) {
-            deck.add("W");
-            deck.add("W4");
-        }
-        Collections.shuffle(deck, random);
-        discard.clear();
-        for (int i = 0; i < hands.size(); i++) {
-            hands.get(i).clear();
-        }
+
+        // Initialize deck and hands
+        deck.initialize();
         for (int i = 0; i < playerNames.size(); i++) {
             for (int j = 0; j < 7; j++) {
-                hands.get(i).add(draw());
+                hands.get(i).add(deck.draw());
             }
         }
-        upCard = draw();
+
+        // Find starting card (not a wild)
+        upCard = deck.draw();
         while (upCard.startsWith("W")) {
-            discard.add(upCard);
-            upCard = draw();
+            deck.discard(upCard);
+            upCard = deck.draw();
         }
         calledColor = "";
         direction = 1;
         currentPlayer = random.nextInt(playerNames.size());
 
-        int guard = 0;
-        while (guard < 3000) {
-            guard++;
-            String name = playerNames.get(currentPlayer);
-            ArrayList<String> hand = hands.get(currentPlayer);
-
-            if (!quiet) {
-                System.out.println("\nUp card: " + upCard + (calledColor.equals("") ? "" : " called " + calledColor));
-                System.out.println(name + " hand: " + join(hand));
-            }
-
-            int chosen = -1;
-            if (humanPlayers.get(currentPlayer).booleanValue()) {
-                chosen = askHuman(hand);
-            } else {
-                chosen = chooseBotCard(hand);
-            }
-
-            if (chosen == -1) {
-                String drawn = draw();
-                hand.add(drawn);
-                if (!quiet) {
-                    System.out.println(name + " draws " + drawn);
-                }
-                if (isLegal(drawn, upCard, calledColor)) {
-                    if (!humanPlayers.get(currentPlayer).booleanValue()) {
-                        chosen = hand.size() - 1;
-                    } else {
-                        System.out.print("Play drawn card " + drawn + "? y/n: ");
-                        String answer = scanner.nextLine();
-                        if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
-                            chosen = hand.size() - 1;
-                        }
-                    }
-                }
-            }
-
-            if (chosen >= 0) {
-                if (chosen >= hand.size()) {
-                    if (!quiet) {
-                        System.out.println(name + " selected an invalid index and draws a penalty card.");
-                    }
-                    hand.add(draw());
-                    next();
-                    continue;
-                }
-
-                String card = hand.get(chosen);
-                boolean ok = GameRules.isLegalPlay(card, upCard, calledColor);
-
-                if (!ok) {
-                    if (!quiet) {
-                        System.out.println(name + " tried illegal card " + card + " and draws a penalty card.");
-                    }
-                    hand.add(draw());
-                    next();
-                    continue;
-                }
-
-                hand.remove(chosen);
-                discard.add(upCard);
-                upCard = card;
-                calledColor = "";
-                if (!quiet) {
-                    System.out.println(name + " plays " + card);
-                }
-
-                if (card.equals("W") || card.equals("W4")) {
-                    if (humanPlayers.get(currentPlayer).booleanValue()) {
-                        calledColor = askColor();
-                    } else {
-                        calledColor = chooseBotColor(hand);
-                    }
-                    if (!quiet) {
-                        System.out.println(name + " calls " + calledColor);
-                    }
-                }
-
-                if (hand.size() == 1 && !quiet) {
-                    System.out.println(name + " says UNO!");
-                }
-
-                if (hand.size() == 0) {
-                    int points = 0;
-                    for (int i = 0; i < hands.size(); i++) {
-                        if (i != currentPlayer) {
-                            for (int j = 0; j < hands.get(i).size(); j++) {
-                                points += points(hands.get(i).get(j));
-                            }
-                        }
-                    }
-                    scores[currentPlayer] += points;
-                    if (!quiet) {
-                        System.out.println(name + " wins and scores " + points);
-                    }
-                    return;
-                }
-
-                if (rank(card).equals("SKIP")) {
-                    next();
-                    next();
-                } else if (rank(card).equals("REVERSE")) {
-                    direction = direction * -1;
-                    if (playerNames.size() == 2) {
-                        next();
-                        next();
-                    } else {
-                        next();
-                    }
-                } else if (rank(card).equals("DRAW_TWO")) {
-                    next();
-                    hands.get(currentPlayer).add(draw());
-                    hands.get(currentPlayer).add(draw());
-                    if (!quiet) {
-                        System.out.println(playerNames.get(currentPlayer) + " draws two.");
-                    }
-                    next();
-                } else if (rank(card).equals("WILD_DRAW_FOUR")) {
-                    next();
-                    for (int i = 0; i < 4; i++) {
-                        hands.get(currentPlayer).add(draw());
-                    }
-                    if (!quiet) {
-                        System.out.println(playerNames.get(currentPlayer) + " draws four.");
-                    }
-                    next();
-                } else {
-                    next();
-                }
-            } else {
-                next();
-            }
+        // Main game loop
+        int safety = 0;
+        while (safety < 3000) {
+            safety++;
+            executeTurn();
         }
         if (!quiet) {
             System.out.println("Game stopped at safety limit.");
         }
     }
 
-    static String draw() {
-        if (deck.size() == 0) {
-            deck.addAll(discard);
-            discard.clear();
-            Collections.shuffle(deck, random);
+    static void executeTurn() {
+        String name = playerNames.get(currentPlayer);
+        ArrayList<String> hand = hands.get(currentPlayer);
+
+        if (!quiet) {
+            System.out.println("\nUp card: " + upCard + (calledColor.isEmpty() ? "" : " called " + calledColor));
+            System.out.println(name + " hand: " + formatHand(hand));
         }
-        if (deck.size() == 0) {
-            return "W";
+
+        int chosen = -1;
+        if (humanPlayers.get(currentPlayer)) {
+            chosen = askHumanCard(hand);
+        } else {
+            chosen = chooseBotCard(hand);
         }
-        return deck.remove(0);
+
+        // Handle draw
+        if (chosen == -1) {
+            String drawn = deck.draw();
+            hand.add(drawn);
+            if (!quiet) {
+                System.out.println(name + " draws " + drawn);
+            }
+            if (GameRules.isLegalPlay(drawn, upCard, calledColor)) {
+                if (!humanPlayers.get(currentPlayer)) {
+                    chosen = hand.size() - 1;
+                } else {
+                    System.out.print("Play drawn card " + drawn + "? y/n: ");
+                    String ans = new java.util.Scanner(System.in).nextLine();
+                    if (ans.equalsIgnoreCase("y") || ans.equalsIgnoreCase("yes")) {
+                        chosen = hand.size() - 1;
+                    }
+                }
+            }
+        }
+
+        // Play card
+        if (chosen >= 0) {
+            if (chosen >= hand.size()) {
+                if (!quiet) {
+                    System.out.println(name + " picked bad index, draws penalty.");
+                }
+                hand.add(deck.draw());
+                nextPlayer();
+                return;
+            }
+
+            String card = hand.get(chosen);
+            if (!GameRules.isLegalPlay(card, upCard, calledColor)) {
+                if (!quiet) {
+                    System.out.println(name + " played illegal card " + card + ", draws penalty.");
+                }
+                hand.add(deck.draw());
+                nextPlayer();
+                return;
+            }
+
+            hand.remove(chosen);
+            deck.discard(upCard);
+            upCard = card;
+            calledColor = "";
+            if (!quiet) {
+                System.out.println(name + " plays " + card);
+            }
+
+            // Handle wild
+            if (card.equals("W") || card.equals("W4")) {
+                if (humanPlayers.get(currentPlayer)) {
+                    calledColor = askHumanColor();
+                } else {
+                    calledColor = chooseBotColor(hand);
+                }
+                if (!quiet) {
+                    System.out.println(name + " calls " + calledColor);
+                }
+            }
+
+            // Check UNO
+            if (hand.size() == 1) {
+                if (!quiet) {
+                    System.out.println(name + " says UNO!");
+                }
+            }
+
+            // Check win
+            if (hand.size() == 0) {
+                int won = 0;
+                for (int i = 0; i < hands.size(); i++) {
+                    if (i != currentPlayer) {
+                        for (String c : hands.get(i)) {
+                            won += GameRules.getCardPoints(c);
+                        }
+                    }
+                }
+                scores[currentPlayer] += won;
+                if (!quiet) {
+                    System.out.println(name + " wins, scores " + won);
+                }
+                return;
+            }
+
+            applyCardEffect(card);
+        } else {
+            nextPlayer();
+        }
     }
 
-    static int chooseBotCard(ArrayList<String> hand) {
-        // Strategy 1: Play draw two if legal
-        for (int i = 0; i < hand.size(); i++) {
-            String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
-                GameRules.getCardRank(card).equals("DRAW_TWO")) {
-                return i;
-            }
-        }
+    static void applyCardEffect(String card) {
+        String effect = GameRules.getCardEffect(card);
 
-        // Strategy 2: Play skip if legal
-        for (int i = 0; i < hand.size(); i++) {
-            String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
-                GameRules.getCardRank(card).equals("SKIP")) {
-                return i;
+        if (effect.equals("SKIP")) {
+            nextPlayer();
+            nextPlayer();
+        } else if (effect.equals("REVERSE")) {
+            direction *= -1;
+            if (playerNames.size() == 2) {
+                nextPlayer();
+                nextPlayer();
+            } else {
+                nextPlayer();
             }
-        }
-
-        // Strategy 3: Play number card if legal
-        for (int i = 0; i < hand.size(); i++) {
-            String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor) &&
-                GameRules.getCardRank(card).equals("NUMBER")) {
-                return i;
+        } else if (effect.equals("DRAW_TWO")) {
+            nextPlayer();
+            hands.get(currentPlayer).add(deck.draw());
+            hands.get(currentPlayer).add(deck.draw());
+            if (!quiet) {
+                System.out.println(playerNames.get(currentPlayer) + " draws two.");
             }
-        }
-
-        // Strategy 4: Play wild if nothing else works
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.get(i).startsWith("W")) {
-                return i;
+            nextPlayer();
+        } else if (effect.equals("WILD_DRAW_FOUR")) {
+            nextPlayer();
+            for (int i = 0; i < 4; i++) {
+                hands.get(currentPlayer).add(deck.draw());
             }
+            if (!quiet) {
+                System.out.println(playerNames.get(currentPlayer) + " draws four.");
+            }
+            nextPlayer();
+        } else {
+            nextPlayer();
         }
-
-        return -1;
     }
 
-    static int askHuman(ArrayList<String> hand) {
+    static int askHumanCard(ArrayList<String> hand) {
+        java.util.Scanner in = new java.util.Scanner(System.in);
         while (true) {
             System.out.print("Choose card index/code or draw: ");
-            String input = scanner.nextLine().trim().toUpperCase();
+            String input = in.nextLine().trim().toUpperCase();
             if (input.equals("DRAW")) {
                 return -1;
             }
             try {
-                int index = Integer.parseInt(input);
-                if (index >= 0 && index < hand.size()) {
-                    return index;
+                int idx = Integer.parseInt(input);
+                if (idx >= 0 && idx < hand.size()) {
+                    return idx;
                 }
             } catch (Exception ignored) {
             }
             for (int i = 0; i < hand.size(); i++) {
                 if (hand.get(i).equals(input)) {
-                    if (isLegal(hand.get(i), upCard, calledColor)) {
+                    if (GameRules.isLegalPlay(hand.get(i), upCard, calledColor)) {
                         return i;
                     }
                     System.out.println("That card is not legal.");
+                    return i;  // Return to be caught by illegal play handler
                 }
             }
             System.out.println("Card not found.");
         }
     }
 
-    static String askColor() {
+    static String askHumanColor() {
+        java.util.Scanner in = new java.util.Scanner(System.in);
         while (true) {
             System.out.print("Call color R/Y/G/B: ");
-            String input = scanner.nextLine().trim().toUpperCase();
-            if (input.equals("R")) {
-                return "R";
-            }
-            if (input.equals("Y")) {
-                return "Y";
-            }
-            if (input.equals("G")) {
-                return "G";
-            }
-            if (input.equals("B")) {
-                return "B";
+            String c = in.nextLine().trim().toUpperCase();
+            if (c.equals("R") || c.equals("Y") || c.equals("G") || c.equals("B")) {
+                return c;
             }
             System.out.println("Bad color.");
         }
     }
 
-    static String chooseBotColor(ArrayList<String> hand) {
-        int r = 0;
-        int y = 0;
-        int g = 0;
-        int b = 0;
+    static int chooseBotCard(ArrayList<String> hand) {
+        // Prefer draw two
         for (int i = 0; i < hand.size(); i++) {
-            String c = color(hand.get(i));
-            if (c.equals("R")) {
-                r++;
-            } else if (c.equals("Y")) {
-                y++;
-            } else if (c.equals("G")) {
-                g++;
-            } else if (c.equals("B")) {
-                b++;
+            if (GameRules.isLegalPlay(hand.get(i), upCard, calledColor) &&
+                GameRules.getCardEffect(hand.get(i)).equals("DRAW_TWO")) {
+                return i;
             }
         }
-        if (r >= y && r >= g && r >= b) {
-            return "R";
-        } else if (y >= r && y >= g && y >= b) {
-            return "Y";
-        } else if (g >= r && g >= y && g >= b) {
-            return "G";
-        } else {
-            return "B";
+        // Then skip
+        for (int i = 0; i < hand.size(); i++) {
+            if (GameRules.isLegalPlay(hand.get(i), upCard, calledColor) &&
+                GameRules.getCardEffect(hand.get(i)).equals("SKIP")) {
+                return i;
+            }
         }
+        // Then numbers
+        for (int i = 0; i < hand.size(); i++) {
+            if (GameRules.isLegalPlay(hand.get(i), upCard, calledColor) &&
+                GameRules.getCardRank(hand.get(i)).equals("NUMBER")) {
+                return i;
+            }
+        }
+        // Finally wild
+        for (int i = 0; i < hand.size(); i++) {
+            if (hand.get(i).startsWith("W")) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    static boolean isLegal(String card, String up, String call) {
-        return GameRules.isLegalPlay(card, up, call);
+    static String chooseBotColor(ArrayList<String> hand) {
+        int r = 0, y = 0, g = 0, b = 0;
+        for (String c : hand) {
+            String col = GameRules.getCardColor(c);
+            if (col.equals("R")) r++;
+            else if (col.equals("Y")) y++;
+            else if (col.equals("G")) g++;
+            else if (col.equals("B")) b++;
+        }
+        if (r >= y && r >= g && r >= b) return "R";
+        if (y >= r && y >= g && y >= b) return "Y";
+        if (g >= r && g >= y && g >= b) return "G";
+        return "B";
     }
 
-    static String color(String card) {
-        return GameRules.getCardColor(card);
-    }
-
-    static String rank(String card) {
-        return GameRules.getCardRank(card);
-    }
-
-    static int number(String card) {
-        return GameRules.getCardNumber(card);
-    }
-
-    static int points(String card) {
-        return GameRules.getCardPoints(card);
-    }
-
-    static void next() {
+    static void nextPlayer() {
         currentPlayer += direction;
-        if (currentPlayer >= playerNames.size()) {
-            currentPlayer = 0;
-        }
-        if (currentPlayer < 0) {
-            currentPlayer = playerNames.size() - 1;
-        }
+        if (currentPlayer >= playerNames.size()) currentPlayer = 0;
+        if (currentPlayer < 0) currentPlayer = playerNames.size() - 1;
     }
 
-    static String join(ArrayList<String> cards) {
+    static String formatHand(ArrayList<String> hand) {
         String out = "";
-        for (int i = 0; i < cards.size(); i++) {
-            out += i + ":" + cards.get(i);
-            if (i < cards.size() - 1) {
-                out += " ";
-            }
+        for (int i = 0; i < hand.size(); i++) {
+            out += i + ":" + hand.get(i);
+            if (i < hand.size() - 1) out += " ";
         }
         return out;
-    }
-
-    static void selfTest() {
-        int passed = 0;
-        if (color("R5").equals("R")) passed++; else fail("color R5");
-        if (rank("G+2").equals("DRAW_TWO")) passed++; else fail("rank +2");
-        if (points("W4") == 50) passed++; else fail("wild points");
-        if (isLegal("R2", "R9", "")) passed++; else fail("same color");
-        if (isLegal("G9", "R9", "")) passed++; else fail("same number");
-        if (isLegal("B3", "W", "B")) passed++; else fail("called color");
-        if (!isLegal("B3", "R9", "")) passed++; else fail("illegal mismatch");
-
-        ArrayList<String> h = new ArrayList<String>();
-        h.add("B3");
-        h.add("R4");
-        h.add("W");
-        upCard = "R9";
-        calledColor = "";
-        if (chooseBotCard(h) == 1) passed++; else fail("bot normal before wild");
-
-        ArrayList<String> h2 = new ArrayList<String>();
-        h2.add("B1");
-        h2.add("B2");
-        h2.add("R3");
-        if (chooseBotColor(h2).equals("B")) passed++; else fail("bot color");
-
-        System.out.println("Passed " + passed + " characterization checks.");
-    }
-
-    static void fail(String name) {
-        throw new RuntimeException("Failed: " + name);
     }
 }

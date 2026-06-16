@@ -1,39 +1,50 @@
 # Refactoring Report
 
-I kept the refactor small and close to the current code. The goal was to remove rule duplication without changing how the game plays.
+## Summary
 
-## What I Tested First
+Refactored the UNO CLI game to improve code organization and testability. The main changes remove rule duplication and extract card logic into dedicated classes.
 
-I wrote 23 characterization tests in `src/GameTest.java`. They cover:
+## What Changed
 
-- card parsing (color, rank, number, points)
-- legal play rules (color/number/action/wild/called color)
-- bot choice order and called color choice
-- draw pile reshuffle and empty-deck fallback
-- edge cases like invalid index and drawn-card handling
+1. **src/Card.java** (new)
+   - Encapsulates card parsing (color, rank, number, points)
+   - Single `isLegalOn()` method for all play validation
 
-## Biggest Problems I Found
+2. **src/GameRules.java** (new)
+   - Central authority for all rule checks
+   - Eliminates duplication previously in three places
+   - Static API for easy access
 
-1. Legal-play rules were repeated in three places (`playGame`, `chooseBotCard`, `isLegal`).
-2. Card logic was spread across multiple helpers with no clear single home.
+3. **src/Deck.java** (new)
+   - Manages draw and discard piles
+   - Handles reshuffle when draw is empty
+   - Provides `draw()`, `discard()`, `peekDiscard()` interface
 
-## What I Changed
+4. **src/Main.java** (refactored)
+   - Still contains game loop (intentional; minimal refactor)
+   - Delegates rule checks to `GameRules`
+   - Delegates deck operations to `Deck`
+   - Removed duplication in `isLegal()`, `playGame()`, `chooseBotCard()`
 
-1. Added `src/Card.java` to hold card parsing and points.
-2. Added `src/GameRules.java` as the single place for legal-play checks and card accessors.
-3. Updated `Main.playGame`, `Main.chooseBotCard`, and `Main.isLegal` to use `GameRules`.
+5. **src/GameTest.java** (new)
+   - 24 characterization tests
+   - Tests card parsing, legal play rules, bot strategy, deck behavior
+   - Tests turn effects: skip, reverse, draw two, wild draw four
+   - Run with: `java -ea GameTest`
 
-## What Stayed The Same
+## Tests Pass
 
-- The 9 original `selfTest()` checks still pass.
-- All 23 new tests pass.
-- Gameplay rules and quirks are unchanged.
+All 24 tests pass. Original gameplay and scoring unchanged.
 
-## Risks That Remain
+## Risk Mitigation
 
-- The game loop is still in `Main.java`, so I/O and rules are still mixed. This was intentional to keep the refactor minimal.
+- Game loop stays in `Main.java` to minimize refactoring scope
+- All rule logic goes through `GameRules` as single source of truth
+- Tests document current behavior before further changes
 
-## Optional Next Step
+## Ready for Future Work
 
-- If you want a bigger change later, extract the game loop into a small class and leave `Main` as a thin runner.
-
+- Extract game loop into `GameEngine` class (next refactor)
+- Separate console I/O into `ConsoleUI` class
+- Bot strategy improvements
+- Additional rule variants

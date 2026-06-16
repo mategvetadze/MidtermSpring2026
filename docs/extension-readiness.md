@@ -1,28 +1,32 @@
-# Extension-Readiness Note
+# Extension-Readiness
 
-## Easiest Extension: Smarter Bot
+## Easiest: Improve Bot Strategy
 
-The fastest upgrade is to improve the bot logic in `Main.chooseBotCard()` and `Main.chooseBotColor()`.
+Modify `Main.chooseBotCard()` and `Main.chooseBotColor()` methods.
 
-Where to change:
+**Why:** Bot decisions are already isolated in two methods. `GameRules.isLegalPlay()` ensures consistency.
 
-- `src/Main.java`
+## Next Easy: Add Rule Variants
 
-Why it is easy:
+Create a second rule-checking method in `GameRules.java` and toggle between them in `Main.playGame()`.
 
-- Bot decisions already live in two methods.
-- `GameRules.isLegalPlay()` keeps the rules consistent.
+**Why:** `GameRules` is now the single source of truth for validation.
 
-## Another Easy Extension: Rule Variant
+## Moderate: Separate I/O from Rules
 
-If you want a house rule, change `GameRules.isLegalPlay()` or add a second method and switch which one `Main` calls.
+Create `ConsoleUI` class (similar to existing design sketches) and move all `System.out.println()` and `Scanner` code there.
 
-Where to change:
+**Why:** `Main.java` will become smaller. Rules stay pure.
 
-- `src/GameRules.java`
-- `src/Main.java`
+## After That: Extract Game Loop
 
-## What Still Makes Change Hard
+Move `Main.playGame()` and related state into a separate `GameEngine` class.
 
-- The game loop is still in `Main.java`, so rules and I/O are mixed. This keeps the refactor small, but big changes will still take time.
+**Why:** Allows testing game logic without I/O. Makes Main a thin runner.
 
+## What Stays Stable
+
+- `Card` class parsing rules (unlikely to change)
+- `GameRules.isLegalPlay()` core contract (everything depends on it)
+- Deck reshuffle behavior (tested and reliable)
+- Scoring formula
