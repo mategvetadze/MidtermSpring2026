@@ -5,30 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="46e54c07-2e5c-4741-a87a-d5eaacc21619" name="Changes" comment="fixed">
-      <change afterPath="$PROJECT_DIR$/out/BotPlayer.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/Card.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/ConsoleGame.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/Deck.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameEngine$TurnOutcome.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameEngine$TurnResult.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameEngine.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameRules.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameState.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameTest$TestGameFixture.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/GameTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/test.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/test.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Card.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Card.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ConsoleUI.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Game.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GameRules.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/GameRules.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Player.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RuleTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +27,6 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="29" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -75,23 +51,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.600852309935723" />
-      <entry key="MS500" value="3.0223207381011994" />
-      <entry key="S2" value="4.728094980991017" />
-      <entry key="S5" value="5.419299268375739" />
-      <entry key="S10" value="5.6959433478884245" />
-      <entry key="S30" value="5.980527080841625" />
-      <entry key="S60" value="6.884358261634001" />
-      <entry key="M2" value="9.733325585260832" />
-      <entry key="M5" value="16.04986387354448" />
-      <entry key="M10" value="23.02908383330513" />
-      <entry key="M15" value="28.335840258124826" />
-      <entry key="M30" value="37.66383557053279" />
-      <entry key="H1" value="44.95597316385804" />
-      <entry key="H2" value="49.57125315048364" />
-      <entry key="H4" value="52.17482012185177" />
-      <entry key="D1" value="54.51290435228299" />
-      <entry key="W1" value="54.930005901990945" />
+      <entry key="MS100" value="1.3368894975406174" />
+      <entry key="MS500" value="2.8391709420513385" />
+      <entry key="S2" value="5.153100745007273" />
+      <entry key="S5" value="7.0874258960467476" />
+      <entry key="S10" value="8.281691737903076" />
+      <entry key="S30" value="9.405158212013232" />
+      <entry key="S60" value="10.300823305721673" />
+      <entry key="M2" value="12.78412401344428" />
+      <entry key="M5" value="19.892329410103212" />
+      <entry key="M10" value="28.10770544836331" />
+      <entry key="M15" value="34.147017497274696" />
+      <entry key="M30" value="44.773695354446865" />
+      <entry key="H1" value="53.1980805069526" />
+      <entry key="H2" value="58.592764534600335" />
+      <entry key="H4" value="61.65740343101053" />
+      <entry key="D1" value="64.42244194889994" />
+      <entry key="W1" value="64.91697485880427" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -113,23 +89,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.4315980344916912" />
-      <entry key="MS500" value="2.9388816225921244" />
-      <entry key="S2" value="4.697331096231099" />
-      <entry key="S5" value="5.40553166008246" />
-      <entry key="S10" value="5.688771594900076" />
-      <entry key="S30" value="5.978036198933919" />
-      <entry key="S60" value="6.882938231394624" />
-      <entry key="M2" value="9.732307708542958" />
-      <entry key="M5" value="16.049150586594134" />
-      <entry key="M10" value="23.028539289411675" />
-      <entry key="M15" value="28.33537681495113" />
-      <entry key="M30" value="37.66351300141018" />
-      <entry key="H1" value="44.95577567840551" />
-      <entry key="H2" value="49.57114284318654" />
-      <entry key="H4" value="52.174761690997116" />
-      <entry key="D1" value="54.51289412189459" />
-      <entry key="W1" value="54.930004427951594" />
+      <entry key="MS100" value="1.2259215315977918" />
+      <entry key="MS500" value="2.7880356071184287" />
+      <entry key="S2" value="5.1299512930168065" />
+      <entry key="S5" value="7.074816279345552" />
+      <entry key="S10" value="8.274360745651496" />
+      <entry key="S30" value="9.402386958590556" />
+      <entry key="S60" value="10.299272904724909" />
+      <entry key="M2" value="12.783093652608716" />
+      <entry key="M5" value="19.891595256334647" />
+      <entry key="M10" value="28.107130237345835" />
+      <entry key="M15" value="34.146524596521836" />
+      <entry key="M30" value="44.773348588724026" />
+      <entry key="H1" value="53.19786627944929" />
+      <entry key="H2" value="58.592644175348106" />
+      <entry key="H4" value="61.65733946568784" />
+      <entry key="D1" value="64.42243071660522" />
+      <entry key="W1" value="64.91697323956244" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -141,29 +117,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/mate/eclipse-workspace/MidtermSpring2026&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/mate/eclipse-workspace/MidtermSpring2026",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -194,7 +171,8 @@
       <workItem from="1778957766421" duration="1228000" />
       <workItem from="1779097958342" duration="758000" />
       <workItem from="1781626282987" duration="8596000" />
-      <workItem from="1781645238603" duration="2786000" />
+      <workItem from="1781645238603" duration="3409000" />
+      <workItem from="1781677062152" duration="36000" />
     </task>
     <task id="LOCAL-00001" summary="fixed">
       <option name="closed" value="true" />
@@ -228,7 +206,23 @@
       <option name="project" value="LOCAL" />
       <updated>1781648195738</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="fixed">
+      <option name="closed" value="true" />
+      <created>1781648633574</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1781648633574</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fixed">
+      <option name="closed" value="true" />
+      <created>1781648813037</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1781648813037</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

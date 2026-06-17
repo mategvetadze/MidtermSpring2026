@@ -1,11 +1,16 @@
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.logging.LogManager;
 
 public class Main {
     static boolean quiet = false;
     static boolean verboseTests = false;
 
     public static void main(String[] args) {
+        configureLogging();
+
         int bots = 3;
         int games = 1;
         boolean human = false;
@@ -50,12 +55,23 @@ public class Main {
             if (!quiet) {
                 System.out.println("\n=== Game " + g + " ===");
             }
+            GameLog.gameStart(g, state.playerCount());
             console.playGame(random);
         }
 
         System.out.println("\nFinal scores:");
         for (int i = 0; i < state.playerNames.size(); i++) {
             System.out.println(state.playerNames.get(i) + ": " + state.scores[i]);
+        }
+        GameLog.sessionEnd();
+    }
+
+    private static void configureLogging() {
+        try (InputStream in = Main.class.getResourceAsStream("/logging.properties")) {
+            if (in != null) {
+                LogManager.getLogManager().readConfiguration(in);
+            }
+        } catch (IOException ignored) {
         }
     }
 

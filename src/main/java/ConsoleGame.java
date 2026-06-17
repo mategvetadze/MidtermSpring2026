@@ -41,6 +41,7 @@ public class ConsoleGame {
     private GameEngine.TurnOutcome playOneTurn() {
         String name = state.currentPlayerName();
         ArrayList<String> hand = state.currentHand();
+        GameLog.playerTurn(name);
 
         if (!quiet) {
             System.out.println(
@@ -60,6 +61,7 @@ public class ConsoleGame {
         if (chosen == -1) {
             String drawn = engine.drawCard();
             hand.add(drawn);
+            GameLog.cardDrawn(name, drawn);
             if (!quiet) {
                 System.out.println(name + " draws " + drawn);
             }
@@ -94,6 +96,9 @@ public class ConsoleGame {
                     System.out.println(event);
                 }
             }
+            if (outcome.result == GameEngine.TurnResult.WON) {
+                GameLog.gameEnd(name, outcome.pointsScored);
+            }
             return outcome;
         }
 
@@ -120,9 +125,11 @@ public class ConsoleGame {
                     if (engine.isLegalPlay(hand.get(i))) {
                         return i;
                     }
+                    GameLog.invalidInput(state.currentPlayerName(), "illegal card " + input);
                     System.out.println("That card is not legal.");
                 }
             }
+            GameLog.invalidInput(state.currentPlayerName(), "card not found: " + input);
             System.out.println("Card not found.");
         }
     }
@@ -143,6 +150,7 @@ public class ConsoleGame {
             if (input.equals("B")) {
                 return "B";
             }
+            GameLog.invalidInput(state.currentPlayerName(), "bad color: " + input);
             System.out.println("Bad color.");
         }
     }

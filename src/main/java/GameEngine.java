@@ -91,7 +91,10 @@ public class GameEngine {
         ArrayList<String> hand = state.currentHand();
 
         if (chosen >= hand.size()) {
-            hand.add(deck.draw());
+            String penalty = deck.draw();
+            hand.add(penalty);
+            GameLog.invalidInput(name, "invalid card index " + chosen);
+            GameLog.cardDrawn(name, penalty);
             events.add(name + " selected an invalid index and draws a penalty card.");
             advancePlayer();
             return new TurnOutcome(TurnResult.CONTINUE, 0, events);
@@ -99,7 +102,10 @@ public class GameEngine {
 
         String card = hand.get(chosen);
         if (!isLegalPlay(card)) {
-            hand.add(deck.draw());
+            String penalty = deck.draw();
+            hand.add(penalty);
+            GameLog.invalidInput(name, "illegal card " + card);
+            GameLog.cardDrawn(name, penalty);
             events.add(name + " tried illegal card " + card + " and draws a penalty card.");
             advancePlayer();
             return new TurnOutcome(TurnResult.CONTINUE, 0, events);
@@ -109,6 +115,7 @@ public class GameEngine {
         deck.discard(state.upCard);
         state.upCard = card;
         state.calledColor = "";
+        GameLog.cardPlayed(name, card);
         events.add(name + " plays " + card);
 
         if (card.equals("W") || card.equals("W4")) {
@@ -147,15 +154,21 @@ public class GameEngine {
         } else if (rank.equals("DRAW_TWO")) {
             advancePlayer();
             ArrayList<String> targetHand = state.currentHand();
-            targetHand.add(deck.draw());
-            targetHand.add(deck.draw());
+            String drawOne = deck.draw();
+            targetHand.add(drawOne);
+            GameLog.cardDrawn(state.currentPlayerName(), drawOne);
+            String drawTwo = deck.draw();
+            targetHand.add(drawTwo);
+            GameLog.cardDrawn(state.currentPlayerName(), drawTwo);
             events.add(state.currentPlayerName() + " draws two.");
             advancePlayer();
         } else if (rank.equals("WILD_DRAW_FOUR")) {
             advancePlayer();
             ArrayList<String> targetHand = state.currentHand();
             for (int i = 0; i < 4; i++) {
-                targetHand.add(deck.draw());
+                String drawn = deck.draw();
+                targetHand.add(drawn);
+                GameLog.cardDrawn(state.currentPlayerName(), drawn);
             }
             events.add(state.currentPlayerName() + " draws four.");
             advancePlayer();

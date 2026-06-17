@@ -11,8 +11,22 @@ public class GameTest {
 
     public static void main(String[] args) {
         System.out.println("Running characterization tests...");
-        runAllTests();
+        int failures = runTests();
         printSummary();
+        if (failures > 0) {
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Runs all characterization tests and returns the failure count.
+     * Used by the Maven test suite without terminating the JVM.
+     */
+    public static int runTests() {
+        passedTests = 0;
+        failedTests = 0;
+        runAllTests();
+        return failedTests;
     }
 
     private static void runAllTests() {
