@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import persistence.RoundResult;
 
 /**
  * Console input/output and game-loop orchestration.
@@ -22,6 +23,14 @@ public class ConsoleGame {
     }
 
     public void playGame(Random random) {
+        playGame(random, 1);
+    }
+
+    /**
+     * Plays one UNO round. Returns winner details when the round ends normally,
+     * or null if the safety turn limit is reached.
+     */
+    public RoundResult playGame(Random random, int roundNumber) {
         engine.startNewGame(random);
 
         int guard = 0;
@@ -29,13 +38,15 @@ public class ConsoleGame {
             guard++;
             GameEngine.TurnOutcome outcome = playOneTurn();
             if (outcome.result == GameEngine.TurnResult.WON) {
-                return;
+                return new RoundResult(
+                        state.currentPlayerName(), outcome.pointsScored, java.time.Instant.now());
             }
         }
 
         if (!quiet) {
             System.out.println("Game stopped at safety limit.");
         }
+        return null;
     }
 
     private GameEngine.TurnOutcome playOneTurn() {

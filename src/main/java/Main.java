@@ -1,8 +1,15 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.LogManager;
+import persistence.GameReport;
+import persistence.GameRepository;
+import persistence.GameSessionResult;
+import persistence.PersistenceConfig;
+import persistence.RoundResult;
 
 public class Main {
     static boolean quiet = false;
@@ -11,9 +18,14 @@ public class Main {
     public static void main(String[] args) {
         configureLogging();
 
+        if (handleReportCommand(args)) {
+            return;
+        }
+
         int bots = 3;
         int games = 1;
         boolean human = false;
+        boolean persist = true;
         long seed = System.currentTimeMillis();
 
         for (int i = 0; i < args.length; i++) {
@@ -25,13 +37,15 @@ public class Main {
                 human = true;
             } else if (args[i].equals("--quiet")) {
                 quiet = true;
+            } else if (args[i].equals("--no-persist")) {
+                persist = false;
             } else if (args[i].equals("--seed") && i + 1 < args.length) {
                 seed = Long.parseLong(args[++i]);
             } else if (args[i].equals("--self-test")) {
                 selfTest();
                 return;
             } else if (args[i].equals("--help")) {
-                System.out.println("Usage: scripts/run.sh [--bots N] [--games N] [--human] [--quiet] [--seed N]");
+                printHelp();
                 return;
             }
         }
@@ -51,12 +65,18 @@ public class Main {
             return;
         }
 
+        Instant sessionStart = Instant.now();
+        ArrayList<RoundResult> roundResults = new ArrayList<>();
+
         for (int g = 1; g <= games; g++) {
             if (!quiet) {
                 System.out.println("\n=== Game " + g + " ===");
             }
             GameLog.gameStart(g, state.playerCount());
-            console.playGame(random);
+            RoundResult roundResult = console.playGame(random, g);
+            if (roundResult != null) {
+                roundResults.add(roundResult);
+            }
         }
 
         System.out.println("\nFinal scores:");
@@ -64,6 +84,66 @@ public class Main {
             System.out.println(state.playerNames.get(i) + ": " + state.scores[i]);
         }
         GameLog.sessionEnd();
+
+        if (persist && !roundResults.isEmpty()) {
+            try {
+                GameRepository repository = new GameRepository();
+                int[] finalScores = new int[state.playerNames.size()];
+                for (int i = 0; i < finalScores.length; i++) {
+                    finalScores[i] = state.scores[i];
+                }
+                GameSessionResult session =
+                        new GameSessionResult(
+                                sessionStart,
+                                Instant.now(),
+                                new ArrayList<>(state.playerNames),
+                                finalScores,
+                                roundResults);
+                long gameId = repository.saveSession(session);
+                if (!quiet) {
+                    System.out.println("Saved game history as record #" + gameId + ".");
+                }
+            } catch (RuntimeException ex) {
+                System.err.println("Could not save game history: " + ex.getMessage());
+            } finally {
+                PersistenceConfig.close();
+            }
+        }
+    }
+
+    private static boolean handleReportCommand(String[] args) {
+        if (args.length == 0 || !args[0].equals("--report")) {
+            return false;
+        }
+
+        GameReport report = new GameReport(new GameRepository());
+        try {
+            if (args.length < 2) {
+                System.out.println("Usage: --report recent|wins|top-scores [limit]");
+                return true;
+            }
+
+            int limit = 10;
+            if (args.length >= 3) {
+                limit = Integer.parseInt(args[2]);
+            }
+
+            switch (args[1]) {
+                case "recent" -> report.printRecentGames(limit);
+                case "wins" -> report.printPlayerWinCounts();
+                case "top-scores" -> report.printHighestScores(limit);
+                default -> System.out.println("Unknown report: " + args[1]);
+            }
+        } finally {
+            PersistenceConfig.close();
+        }
+        return true;
+    }
+
+    private static void printHelp() {
+        System.out.println(
+                "Usage: scripts/run.sh [--bots N] [--games N] [--human] [--quiet] [--seed N] [--no-persist]");
+        System.out.println("Reports: scripts/run.sh --report recent|wins|top-scores [limit]");
     }
 
     private static void configureLogging() {

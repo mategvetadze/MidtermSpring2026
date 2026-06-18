@@ -3,3 +3,6 @@ out/
 *.class
 .idea/
 *.iml
+data/
+*.mv.db
+*.trace.db
