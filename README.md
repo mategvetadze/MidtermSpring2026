@@ -1,9 +1,10 @@
 # UNO CLI
 
-UNO card game from the midterm, converted to Maven with logging and Docker for HW4.
-Assignment 5 adds H2 + JPA persistence for game history and statistics.
+Full UNO card game project: midterm refactor, Maven/Docker/logging (HW4), persistence (HW5), and final-project rules.
 
-See [docs/database.md](docs/database.md) for schema, configuration, and persistence details.
+- [docs/rules-supported.md](docs/rules-supported.md) — implemented UNO rules
+- [docs/final-report.md](docs/final-report.md) — architecture, tests, limitations
+- [docs/database.md](docs/database.md) — persistence setup and reports
 
 ## Build
 
@@ -17,21 +18,37 @@ See [docs/database.md](docs/database.md) for schema, configuration, and persiste
 ./mvnw test
 ```
 
-Runs 9 unit checks from `Main --self-test`, 37 characterization tests from `GameTest`, and JPA persistence tests in `GameRepositoryTest`.
+Runs characterization tests, final-project rule tests, and persistence tests.
 
 ## Run
 
+Play to 500 points (default):
+
 ```bash
-./mvnw exec:java -Dexec.args="--bots 3 --games 1"
+./mvnw exec:java -Dexec.args="--bots 3"
 ```
 
 With a human player:
 
 ```bash
-./mvnw exec:java -Dexec.args="--human --bots 2 --games 1"
+./mvnw exec:java -Dexec.args="--human --bots 2"
 ```
 
-Card codes: `R5` red 5, `YS` yellow skip, `BR` blue reverse, `G+2` green draw-two, `W` wild, `W4` wild draw-four, `draw` to draw.
+Play exactly N rounds:
+
+```bash
+./mvnw exec:java -Dexec.args="--bots 3 --games 3"
+```
+
+Custom target score:
+
+```bash
+./mvnw exec:java -Dexec.args="--bots 3 --target 200"
+```
+
+During your turn: card index/code, `draw`, or `uno`.
+
+Card codes: `R5` red 5, `YS` yellow skip, `BR` blue reverse, `G+2` green draw-two, `W` wild, `W4` wild draw-four.
 
 Skip saving game history:
 
@@ -56,7 +73,7 @@ View saved statistics:
 Creates `target/uno-cli.jar`. Run directly:
 
 ```bash
-java -jar target/uno-cli.jar --bots 3 --games 1
+java -jar target/uno-cli.jar --human --bots 2
 java -jar target/uno-cli.jar --report recent
 ```
 
@@ -86,4 +103,4 @@ docker run --rm -v "$(pwd)/data:/app/data" uno-cli --bots 3 --games 1
 
 ## Logging
 
-Added `GameLog` class using `java.util.logging`. Logs game start, each player turn, cards played/drawn, invalid input, and game end. Normal console output is unchanged.
+`GameLog` uses `java.util.logging` for game events. Normal console output is unchanged.

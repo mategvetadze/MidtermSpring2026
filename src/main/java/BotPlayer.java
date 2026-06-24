@@ -8,7 +8,7 @@ public class BotPlayer {
     public static int chooseCard(ArrayList<String> hand, String upCard, String calledColor) {
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor)
+            if (GameRules.isWildDrawFourLegal(card, hand, upCard, calledColor)
                     && GameRules.getCardRank(card).equals("DRAW_TWO")) {
                 return i;
             }
@@ -16,7 +16,7 @@ public class BotPlayer {
 
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor)
+            if (GameRules.isWildDrawFourLegal(card, hand, upCard, calledColor)
                     && GameRules.getCardRank(card).equals("SKIP")) {
                 return i;
             }
@@ -24,14 +24,22 @@ public class BotPlayer {
 
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            if (GameRules.isLegalPlay(card, upCard, calledColor)
+            if (GameRules.isWildDrawFourLegal(card, hand, upCard, calledColor)
                     && GameRules.getCardRank(card).equals("NUMBER")) {
                 return i;
             }
         }
 
         for (int i = 0; i < hand.size(); i++) {
-            if (hand.get(i).startsWith("W")) {
+            String card = hand.get(i);
+            if (GameRules.isWildDrawFourLegal(card, hand, upCard, calledColor) && card.equals("W")) {
+                return i;
+            }
+        }
+
+        for (int i = 0; i < hand.size(); i++) {
+            String card = hand.get(i);
+            if (GameRules.isWildDrawFourLegal(card, hand, upCard, calledColor) && card.equals("W4")) {
                 return i;
             }
         }

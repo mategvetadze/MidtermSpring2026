@@ -436,7 +436,7 @@ public class GameTest {
             fixture.state.currentPlayer = 0;
             fixture.state.upCard = "R4";
             fixture.state.hands.get(0).add("W4");
-            fixture.state.hands.get(0).add("R3");
+            fixture.state.hands.get(0).add("B9");
             int nextHandSizeBefore = fixture.state.hands.get(1).size();
 
             fixture.engine.playChosenCard(0, "B", new ArrayList<>());

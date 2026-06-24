@@ -23,7 +23,8 @@ public class Main {
         }
 
         int bots = 3;
-        int games = 1;
+        int games = 0;
+        int targetScore = GameState.DEFAULT_TARGET_SCORE;
         boolean human = false;
         boolean persist = true;
         long seed = System.currentTimeMillis();
@@ -33,6 +34,8 @@ public class Main {
                 bots = Integer.parseInt(args[++i]);
             } else if (args[i].equals("--games") && i + 1 < args.length) {
                 games = Integer.parseInt(args[++i]);
+            } else if (args[i].equals("--target") && i + 1 < args.length) {
+                targetScore = Integer.parseInt(args[++i]);
             } else if (args[i].equals("--human")) {
                 human = true;
             } else if (args[i].equals("--quiet")) {
@@ -52,11 +55,13 @@ public class Main {
 
         Random random = new Random(seed);
         GameState state = new GameState();
+        state.targetScore = targetScore;
         Deck deck = new Deck();
         GameEngine engine = new GameEngine(state, deck);
         Scanner scanner = new Scanner(System.in);
         ConsoleGame console = new ConsoleGame(state, engine, scanner);
         console.setQuiet(quiet);
+        GameMatch match = new GameMatch(state, console);
 
         state.setupPlayers(bots, human);
 
@@ -66,22 +71,24 @@ public class Main {
         }
 
         Instant sessionStart = Instant.now();
-        ArrayList<RoundResult> roundResults = new ArrayList<>();
-
-        for (int g = 1; g <= games; g++) {
+        ArrayList<RoundResult> roundResults;
+        if (games > 0) {
+            roundResults = match.playRounds(random, games);
+        } else {
             if (!quiet) {
-                System.out.println("\n=== Game " + g + " ===");
+                System.out.println("Playing to " + targetScore + " points.");
             }
-            GameLog.gameStart(g, state.playerCount());
-            RoundResult roundResult = console.playGame(random, g);
-            if (roundResult != null) {
-                roundResults.add(roundResult);
-            }
+            roundResults = match.playToTarget(random);
         }
 
         System.out.println("\nFinal scores:");
         for (int i = 0; i < state.playerNames.size(); i++) {
             System.out.println(state.playerNames.get(i) + ": " + state.scores[i]);
+        }
+
+        int winnerIndex = state.matchWinnerIndex();
+        if (winnerIndex >= 0) {
+            System.out.println("Match winner: " + state.playerNames.get(winnerIndex));
         }
         GameLog.sessionEnd();
 
@@ -142,8 +149,11 @@ public class Main {
 
     private static void printHelp() {
         System.out.println(
-                "Usage: scripts/run.sh [--bots N] [--games N] [--human] [--quiet] [--seed N] [--no-persist]");
+                "Usage: scripts/run.sh [--bots N] [--target N] [--games N] [--human] [--quiet] [--seed N] [--no-persist]");
+        System.out.println("  --target N   play rounds until someone reaches N points (default 500)");
+        System.out.println("  --games N    play exactly N rounds instead of using target score");
         System.out.println("Reports: scripts/run.sh --report recent|wins|top-scores [limit]");
+        System.out.println("During your turn: card index/code, draw, or uno");
     }
 
     private static void configureLogging() {

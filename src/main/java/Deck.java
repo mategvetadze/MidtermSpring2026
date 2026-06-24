@@ -6,6 +6,7 @@ import java.util.Random;
  * Manages the draw pile and discard pile.
  */
 public class Deck {
+    public static final int STANDARD_DECK_SIZE = 108;
     private final ArrayList<String> drawPile = new ArrayList<>();
     private final ArrayList<String> discardPile = new ArrayList<>();
     private Random random = new Random();
@@ -73,5 +74,76 @@ public class Deck {
 
     public int discardPileSize() {
         return discardPile.size();
+    }
+
+    /** Builds an unshuffled deck for composition checks. */
+    public static ArrayList<String> buildStandardDeck() {
+        Deck deck = new Deck();
+        deck.buildAndShuffle();
+        ArrayList<String> cards = new ArrayList<>(deck.getDrawPile());
+        return cards;
+    }
+
+    public static boolean isStandardComposition(ArrayList<String> cards) {
+        if (cards.size() != STANDARD_DECK_SIZE) {
+            return false;
+        }
+        int[] colorNumbers = new int[40];
+        int[] colorActions = new int[24];
+        int wilds = 0;
+        int wildDrawFours = 0;
+        for (String card : cards) {
+            if (card.equals("W")) {
+                wilds++;
+            } else if (card.equals("W4")) {
+                wildDrawFours++;
+            } else {
+                String color = GameRules.getCardColor(card);
+                String rank = GameRules.getCardRank(card);
+                int colorIndex = switch (color) {
+                    case "R" -> 0;
+                    case "Y" -> 1;
+                    case "G" -> 2;
+                    case "B" -> 3;
+                    default -> -1;
+                };
+                if (colorIndex < 0) {
+                    return false;
+                }
+                if (rank.equals("NUMBER")) {
+                    colorNumbers[colorIndex * 10 + GameRules.getCardNumber(card)]++;
+                } else {
+                    colorActions[colorIndex * 6 + actionIndex(rank)]++;
+                }
+            }
+        }
+        if (wilds != 4 || wildDrawFours != 4) {
+            return false;
+        }
+        for (int color = 0; color < 4; color++) {
+            if (colorNumbers[color * 10] != 1) {
+                return false;
+            }
+            for (int number = 1; number <= 9; number++) {
+                if (colorNumbers[color * 10 + number] != 2) {
+                    return false;
+                }
+            }
+            for (int action = 0; action < 3; action++) {
+                if (colorActions[color * 6 + action] != 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static int actionIndex(String rank) {
+        return switch (rank) {
+            case "SKIP" -> 0;
+            case "REVERSE" -> 1;
+            case "DRAW_TWO" -> 2;
+            default -> -1;
+        };
     }
 }

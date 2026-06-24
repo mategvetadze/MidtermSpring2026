@@ -99,5 +99,32 @@ public class GameRules {
     public static int getCardNumber(String card) {
         return new Card(card).number();
     }
+
+    /**
+     * Wild Draw Four is only legal when the player has no other playable card.
+     */
+    public static boolean isWildDrawFourLegal(String card, ArrayList<String> hand, String upCard, String calledColor) {
+        if (!card.equals("W4")) {
+            return isLegalPlay(card, upCard, calledColor);
+        }
+        if (!isLegalPlay(card, upCard, calledColor)) {
+            return false;
+        }
+        for (String candidate : hand) {
+            if (!candidate.equals("W4") && isLegalPlay(candidate, upCard, calledColor)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean hasLegalPlay(ArrayList<String> hand, String upCard, String calledColor) {
+        for (String card : hand) {
+            if (isWildDrawFourLegal(card, hand, upCard, calledColor)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

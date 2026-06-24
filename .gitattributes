@@ -1,0 +1,5 @@
+# Normalize line endings for all text files
+* text=auto
+
+# Generated Maven files - ignore line ending warnings
+dependency-reduced-pom.xml text eol=lf

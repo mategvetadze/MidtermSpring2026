@@ -23,15 +23,15 @@ public class ConsoleGame {
     }
 
     public void playGame(Random random) {
-        playGame(random, 1);
+        playRound(random, 1);
     }
 
     /**
      * Plays one UNO round. Returns winner details when the round ends normally,
      * or null if the safety turn limit is reached.
      */
-    public RoundResult playGame(Random random, int roundNumber) {
-        engine.startNewGame(random);
+    public RoundResult playRound(Random random, int roundNumber) {
+        engine.startNewRound(random);
 
         int guard = 0;
         while (guard < GameEngine.SAFETY_TURN_LIMIT) {
@@ -44,12 +44,20 @@ public class ConsoleGame {
         }
 
         if (!quiet) {
-            System.out.println("Game stopped at safety limit.");
+            System.out.println("Round stopped at safety limit.");
         }
         return null;
     }
 
     private GameEngine.TurnOutcome playOneTurn() {
+        if (!quiet) {
+            for (String event : engine.applyMissedUnoPenalties()) {
+                System.out.println(event);
+            }
+        } else {
+            engine.applyMissedUnoPenalties();
+        }
+
         String name = state.currentPlayerName();
         ArrayList<String> hand = state.currentHand();
         GameLog.playerTurn(name);
@@ -60,6 +68,9 @@ public class ConsoleGame {
                             + state.upCard
                             + (state.calledColor.equals("") ? "" : " called " + state.calledColor));
             System.out.println(name + " hand: " + formatHand(hand));
+            if (state.isCurrentPlayerHuman() && hand.size() == 1) {
+                System.out.println("You have one card. Type 'uno' before another player takes a turn.");
+            }
         }
 
         int chosen;
@@ -77,7 +88,7 @@ public class ConsoleGame {
                 System.out.println(name + " draws " + drawn);
             }
 
-            if (engine.isLegalPlay(drawn)) {
+            if (engine.isLegalPlay(drawn, hand)) {
                 if (state.isCurrentPlayerHuman()) {
                     System.out.print("Play drawn card " + drawn + "? y/n: ");
                     String answer = scanner.nextLine();
@@ -94,7 +105,7 @@ public class ConsoleGame {
             String calledColor = null;
             if (chosen < hand.size()) {
                 String card = hand.get(chosen);
-                if ((card.equals("W") || card.equals("W4")) && engine.isLegalPlay(card)) {
+                if ((card.equals("W") || card.equals("W4")) && engine.isLegalPlay(card, hand)) {
                     calledColor =
                             state.isCurrentPlayerHuman()
                                     ? askColor()
@@ -119,29 +130,35 @@ public class ConsoleGame {
 
     private int askHuman(ArrayList<String> hand) {
         while (true) {
-            System.out.print("Choose card index/code or draw: ");
-            String input = scanner.nextLine().trim().toUpperCase();
-            if (input.equals("DRAW")) {
+            System.out.print("Choose card index/code, draw, or uno: ");
+            String input = scanner.nextLine().trim();
+            if (input.equalsIgnoreCase("uno")) {
+                engine.callUno(state.currentPlayer);
+                System.out.println("You called UNO.");
+                continue;
+            }
+            String upper = input.toUpperCase();
+            if (upper.equals("DRAW")) {
                 return -1;
             }
             try {
-                int index = Integer.parseInt(input);
+                int index = Integer.parseInt(upper);
                 if (index >= 0 && index < hand.size()) {
                     return index;
                 }
             } catch (Exception ignored) {
             }
             for (int i = 0; i < hand.size(); i++) {
-                if (hand.get(i).equals(input)) {
-                    if (engine.isLegalPlay(hand.get(i))) {
+                if (hand.get(i).equals(upper)) {
+                    if (engine.isLegalPlay(hand.get(i), hand)) {
                         return i;
                     }
-                    GameLog.invalidInput(state.currentPlayerName(), "illegal card " + input);
+                    GameLog.invalidInput(state.currentPlayerName(), "illegal card " + upper);
                     System.out.println("That card is not legal.");
                 }
             }
             GameLog.invalidInput(state.currentPlayerName(), "card not found: " + input);
-            System.out.println("Card not found.");
+            System.out.println("Card not found. Use index, card code, draw, or uno.");
         }
     }
 

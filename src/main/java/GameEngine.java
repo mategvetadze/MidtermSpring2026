@@ -6,6 +6,7 @@ import java.util.Random;
  */
 public class GameEngine {
     public static final int SAFETY_TURN_LIMIT = 3000;
+    public static final int MISSED_UNO_PENALTY_CARDS = 2;
 
     public enum TurnResult {
         CONTINUE,
@@ -40,6 +41,10 @@ public class GameEngine {
         return deck;
     }
 
+    public void startNewRound(Random random) {
+        startNewGame(random);
+    }
+
     public void startNewGame(Random random) {
         deck.setRandom(random);
         deck.buildAndShuffle();
@@ -66,7 +71,11 @@ public class GameEngine {
     }
 
     public boolean isLegalPlay(String card) {
-        return GameRules.isLegalPlay(card, state.upCard, state.calledColor);
+        return isLegalPlay(card, state.currentHand());
+    }
+
+    public boolean isLegalPlay(String card, ArrayList<String> hand) {
+        return GameRules.isWildDrawFourLegal(card, hand, state.upCard, state.calledColor);
     }
 
     public void advancePlayer() {
@@ -75,8 +84,36 @@ public class GameEngine {
             state.currentPlayer = 0;
         }
         if (state.currentPlayer < 0) {
-            state.currentPlayer = state.playerCount() - 1;
+            state.currentPlayer = state.currentPlayer + state.playerCount();
         }
+    }
+
+    public void callUno(int playerIndex) {
+        if (playerIndex >= 0
+                && playerIndex < state.playerCount()
+                && state.hands.get(playerIndex).size() == 1) {
+            state.vulnerableUno.set(playerIndex, Boolean.FALSE);
+        }
+    }
+
+    public ArrayList<String> applyMissedUnoPenalties() {
+        ArrayList<String> events = new ArrayList<>();
+        for (int i = 0; i < state.playerCount(); i++) {
+            if (state.vulnerableUno.get(i).booleanValue() && state.hands.get(i).size() == 1) {
+                for (int c = 0; c < MISSED_UNO_PENALTY_CARDS; c++) {
+                    String drawn = deck.draw();
+                    state.hands.get(i).add(drawn);
+                    GameLog.cardDrawn(state.playerNames.get(i), drawn);
+                }
+                state.vulnerableUno.set(i, Boolean.FALSE);
+                events.add(
+                        state.playerNames.get(i)
+                                + " forgot UNO and draws "
+                                + MISSED_UNO_PENALTY_CARDS
+                                + ".");
+            }
+        }
+        return events;
     }
 
     /**
@@ -101,7 +138,7 @@ public class GameEngine {
         }
 
         String card = hand.get(chosen);
-        if (!isLegalPlay(card)) {
+        if (!isLegalPlay(card, hand)) {
             String penalty = deck.draw();
             hand.add(penalty);
             GameLog.invalidInput(name, "illegal card " + card);
@@ -124,13 +161,18 @@ public class GameEngine {
         }
 
         if (hand.size() == 1) {
-            events.add(name + " says UNO!");
+            if (state.isHuman(state.currentPlayer)) {
+                state.vulnerableUno.set(state.currentPlayer, Boolean.TRUE);
+            } else {
+                state.vulnerableUno.set(state.currentPlayer, Boolean.FALSE);
+                events.add(name + " says UNO!");
+            }
         }
 
         if (hand.isEmpty()) {
             int points = scoreOpponents();
             state.scores[state.currentPlayer] += points;
-            events.add(name + " wins and scores " + points);
+            events.add(name + " wins the round and scores " + points);
             return new TurnOutcome(TurnResult.WON, points, events);
         }
 
