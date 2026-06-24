@@ -1,5 +1,25 @@
 # Final Project Report
 
+## Rubric Coverage Summary
+
+| Rubric area | Points | Evidence |
+|-------------|--------|----------|
+| Correct deck composition | 5 | `Deck.buildStandardDeck()`, `Deck.isStandardComposition()`, `FinalProjectRulesTest.deckHas108Cards`, `deckContainsFourColorsNumberedCardsAndActionCards` |
+| Legal play validation | 7 | `Card.isLegalOn()`, `GameRules`, `FinalProjectRulesTest.legalPlayMatchesColorNumberAndActionType`, `wildCardsArePlayableAndIllegalCardsAreRejected` |
+| Skip | 5 | `GameEngine.applyCardEffect()`, `FinalProjectRulesTest.skipMakesNextPlayerLoseTurnInThreePlayerGame` |
+| Reverse | 5 | `GameEngine.applyCardEffect()`, `FinalProjectRulesTest.reverseChangesDirectionForThreePlayers`, `reverseActsLikeSkipInTwoPlayerGame` |
+| Draw Two | 5 | `GameEngine.applyCardEffect()`, `FinalProjectRulesTest.drawTwoAddsTwoCardsAndSkipsNextPlayer` |
+| Wild | 5 | `GameEngine.playChosenCard()`, `FinalProjectRulesTest.wildSetsCalledColorThatAffectsLegalPlay` |
+| Wild Draw Four | 5 | `GameRules.isWildDrawFourLegal()`, `FinalProjectRulesTest.wildDrawFourIsRestrictedWhenOtherPlaysExist`, `wildDrawFourDrawsFourSkipsTurnAndSetsColor` |
+| Draw/pass behavior | 5 | `ConsoleGame`, `GameEngine.drawCard()`, `FinalProjectRulesTest.playerCanDrawAndPlayLegalDrawnCard`, `playerCanDrawAndPassWhenDrawnCardIsNotPlayable` |
+| UNO call and penalty | 4 | `GameEngine.callUno()`, `applyMissedUnoPenalties()`, `FinalProjectRulesTest` UNO tests |
+| Round scoring and target | 4 | `GameEngine.scoreOpponents()`, `GameState.isMatchOver()`, `GameMatch.playToTarget()`, scoring tests |
+| Game design | 4 | Layered architecture below; engine tests run without CLI |
+| CLI playability | 2 | `ConsoleGame` prompts, `Main --help`, invalid input handling |
+| Documentation | 4 | This report, `README.md`, `docs/rules-supported.md` |
+
+Additional characterization tests: `GameTest` (37 tests). Persistence tests: `persistence.GameRepositoryTest`.
+
 ## Implemented UNO Rules
 
 The final project builds on the midterm refactor, Assignment 4 tooling, and Assignment 5 persistence.
@@ -65,24 +85,17 @@ The project separates concerns into layers:
 
 ## Tests Added
 
-### Existing characterization suite
+### Characterization suite
 
 `GameTest` (37 tests) documents core behavior for card parsing, legality, action cards, draw/pass, scoring, and turn effects.
+
+### Final project JUnit suite
+
+`FinalProjectRulesTest` (18 tests) maps directly to the final project rubric rule menu.
 
 ### Assignment 5 persistence tests
 
 `persistence.GameRepositoryTest` covers save and query behavior with isolated in-memory H2.
-
-### Final project JUnit tests
-
-`finalproject.FinalProjectRulesTest` adds focused tests for:
-
-- standard deck composition (108 cards)
-- Wild Draw Four legality restriction
-- UNO call and missed-UNO penalty
-- round scoring
-- target-score match completion
-- draw/pass turn ending
 
 Run all tests:
 

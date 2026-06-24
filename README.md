@@ -18,7 +18,7 @@ Full UNO card game project: midterm refactor, Maven/Docker/logging (HW4), persis
 ./mvnw test
 ```
 
-Runs characterization tests, final-project rule tests, and persistence tests.
+Runs characterization tests (`GameTest`), 18 rubric-aligned final project tests (`FinalProjectRulesTest`), and persistence tests.
 
 ## Run
 

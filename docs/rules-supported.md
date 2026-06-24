@@ -48,3 +48,18 @@ This document maps the course UNO rule menu to this project. The local reference
 # Play exactly three rounds
 ./mvnw exec:java -Dexec.args="--bots 3 --games 3"
 ```
+
+## Test Mapping (Final Project Rubric)
+
+| Rubric item | Test class | Test method(s) |
+|-------------|------------|----------------|
+| Deck composition | `FinalProjectRulesTest` | `deckHas108Cards`, `deckContainsFourColorsNumberedCardsAndActionCards` |
+| Legal play | `FinalProjectRulesTest`, `GameTest` | `legalPlayMatchesColorNumberAndActionType`, `wildCardsArePlayableAndIllegalCardsAreRejected` |
+| Skip | `FinalProjectRulesTest`, `GameTest` | `skipMakesNextPlayerLoseTurnInThreePlayerGame` |
+| Reverse | `FinalProjectRulesTest`, `GameTest` | `reverseChangesDirectionForThreePlayers`, `reverseActsLikeSkipInTwoPlayerGame` |
+| Draw Two | `FinalProjectRulesTest`, `GameTest` | `drawTwoAddsTwoCardsAndSkipsNextPlayer` |
+| Wild | `FinalProjectRulesTest`, `GameTest` | `wildSetsCalledColorThatAffectsLegalPlay` |
+| Wild Draw Four | `FinalProjectRulesTest`, `GameTest` | `wildDrawFourIsRestrictedWhenOtherPlaysExist`, `wildDrawFourDrawsFourSkipsTurnAndSetsColor` |
+| Draw/pass | `FinalProjectRulesTest`, `GameTest` | `playerCanDrawAndPlayLegalDrawnCard`, `playerCanDrawAndPassWhenDrawnCardIsNotPlayable` |
+| UNO call/penalty | `FinalProjectRulesTest`, `GameTest` | `oneCardStateIsDetectedAndMissedUnoDrawsPenalty`, `callingUnoPreventsPenalty`, `botAutomaticallyCallsUnoAtOneCard` |
+| Scoring/target | `FinalProjectRulesTest`, `GameTest` | `roundWinnerScoresRemainingOpponentCards`, `matchContinuesUntilTargetScoreAndDeterminesWinner` |
